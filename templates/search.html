@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{% block title %} Searching property in <u>{{ query }}</u> {% endblock %}</h2>
+<h3>Showing {{ start }}  - {{ end }} of {{ count }} properties</h3>
+<ul>
+{% for p in properties %}
+     <li><a href="/property/{{ p['id'] }}">{{ p['property_address'] }}</a></li>
+{% endfor %}
+</ul>
+
+{{ pagination.links }}
+{% endblock %}

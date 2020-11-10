@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Search the world of Property on Padopia {% endblock %}</h1>
+
+    <form method="GET" action="/search">
+        <input type="text" name="q" placeholder="Search here...">
+        <input type="submit" value="Search">
+    </form>
+
+{% endblock %}
