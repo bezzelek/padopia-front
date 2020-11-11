@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{% block title %} {{ p['property_address'] }} {% endblock %}</h2>
+
+<div id="property-images-carousel" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+  <ol class="carousel-indicators">{% for img in p['property_photos'] %}
+	  <li data-target="#property-images-carousel" data-slide-to="{{ loop.index0 }}"{% if loop.first %} class="active"{% endif %}></li>{% endfor %}
+  </ol>
+
+{% for img in p['property_photos'] %}
+<div class="carousel-item{% if loop.first %} active{% endif %}">
+	<img class="d-block w-100" src="{{ img }}" alt="">
+    </div>
+{% endfor %}
+  </div>
+</div>
+<p>{{ p['property_description'] }}</p>
+
+
+{% endblock %}
