@@ -30,11 +30,21 @@ def search():
     collection_property = db['property']
     collection_agencies = db['agencies']
 
+    countries = ['Ireland', 'Spain', 'Bulgaria']
     #out = "<h1 style='color:blue'>Padopia</h1><ul>"
-    query = request.args.get('q', '')
-    query_re = re.compile(query, re.IGNORECASE)
-    #out += repr(query_re)
-    searched_properties = collection_property.find({'property_address': query_re})
+    query = {}
+    q = request.args.get('q', '').strip()
+    country = request.args.get('country', '').strip()
+    query_string = ''
+    if q != '':
+        query_re = re.compile(q, re.IGNORECASE)
+        query['property_address'] = query_re
+        query_string += ' matching "' + q + '"'
+    if country in countries:
+        query['property_website_country'] = country
+        query_string += ' in ' + country
+
+    searched_properties = collection_property.find(query)
 
     per_page = 25
     page = request.args.get('page', type=int, default=1)
@@ -62,7 +72,7 @@ def search():
     #    out += '<li><a href="/property/' + str(p['_id']) + '">' + p['property_address'] + '</a></li>'
 
     #return out
-    return render_template('search.html', properties=new_properties, pagination=pagination, query=query, search=search, count=count, start=offset+1, end=offset+shown_count, per_page=per_page)
+    return render_template('search.html', properties=new_properties, pagination=pagination, query=query_string, search=search, count=count, start=offset+1, end=offset+shown_count, per_page=per_page)
 
 @app.route("/property/<id>")
 def property(id):
@@ -71,11 +81,13 @@ def property(id):
     collection_agencies = db['agencies']
 
     p = collection_property.find_one({'_id': ObjectId(id)})
-    out = "<h1 style='color:blue'>Padopia</h1>"
-    out += '<h2 style="color:grey">' + p['property_address'] + '</h2>'
-    out += '<p>' + p['property_description'] + '</p>'
 
-    return out
+    #out = "<h1 style='color:blue'>Padopia</h1>"
+    #out += '<h2 style="color:grey">' + p['property_address'] + '</h2>'
+    #out += '<p>' + p['property_description'] + '</p>'
+    # return out
+
+    return render_template('property.html', p=p)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

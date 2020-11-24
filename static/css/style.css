@@ -3,6 +3,7 @@
  * (C) Omniclear Ltd 2020
  */
 
+/*
 .pagination-page-info {
     padding: .6em;
     padding-left: 0;
@@ -18,4 +19,38 @@
     padding: .1em .25em;
     font-size: 150%;
 }
+*/
 
+.carousel-indicators {
+    bottom: -15px !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    background: rgba(60, 60, 120, 0.5) !important;
+}
+
+.property-search li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.property-search li a {
+    display: block;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+.property-search li a:hover {
+    background: #eee;
+}
+.property-search li a .address {
+    font-size: 1em;
+    color: rgb(60, 60, 120);
+}
+
+.property-search li a .price {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: rgb(60, 150, 60);
+}
+.property-search li img {
+    height: 50px;
+}

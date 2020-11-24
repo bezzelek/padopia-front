@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>{% block title %} Searching property in <u>{{ query }}</u> {% endblock %}</h2>
+<h2>{% block title %} {% if query == '' %} Showing all properties 
+{% else %}Searching property{{ query }}
+{% endif %}
+{% endblock %}</h2>
 <h3>Showing {{ start }}  - {{ end }} of {{ count }} properties</h3>
-<ul>
+<ul class="property-search">
 {% for p in properties %}
-     <li><a href="/property/{{ p['id'] }}">{{ p['property_address'] }}</a></li>
+  <li><a href="/property/{{ p['id'] }}">
+    <img src="{{ p['property_photo'] }}" />
+    <span class="address">{{ p['property_address'] }}</span>
+    <span class="price">{{ p['property_cost'] }}</span>
+</a></li>
 {% endfor %}
 </ul>
 
