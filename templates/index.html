@@ -1,17 +1,74 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Search the world of Property on Padopia {% endblock %}</h1>
-
-    <form method="GET" action="/search">
-        <input type="text" name="q" placeholder="Search here...">
-        <input type="submit" value="Search">
-    </form>
 
 <a href="/search?country=Ireland">Ireland</a>
 
 <a href="/search?country=Spain">Spain</a>
 
 <a href="/search?country=Bulgaria">Bulgaria</a>
+
+<div class="container">
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto bg-light rounded p-4">
+            <h5 class="text-center font-weight-bold">Search the world of Property on Padopia</h5>
+            <hr class="my-1">
+            <h5 class="text-center text-secondary">Type country, region or city to search</h5>
+            <form action="/search" method="GET" class="p-3">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="q"
+                        id="livebox"
+                        class="form-control form-control-lg rounded-0"
+                        placeholder="Search..."
+                        autocomplete="off"
+                        required
+                    >
+                    <div class="input-group-append">
+                        <input type="submit" value="Search" class="btn btn-primary rounded-0">
+                    </div>
+                </div>
+                <div class="mdb-select md-form" id="show-list">
+                    <!-- DROPDOWN LIST -->
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Send Search Text to the server
+        $("#livebox").keyup(function () {
+        let searchText = $(this).val();
+        if (searchText != "") {
+            $.ajax({
+            method:"post",
+            url:"/autocomplete",
+            data:{text:$("#livebox").val()},
+            success: function (response) {
+                var values_list = [];
+                $.each(response, function(index, value) {
+                    var open_tag = '<a href="#" class="list-group-item list-group-item-action">';
+                    var closed_tag = '</a>';
+                    var result_value = value.address;
+                    var result = open_tag + result_value + closed_tag
+                    values_list.push(result);
+                });
+                $("#show-list").html(values_list);
+            },
+            });
+        } else {
+            $("#show-list").html("");
+        }
+        });
+        // Set searched text in input field on click of search button
+        $(document).on("click", "a", function () {
+            $("#livebox").val($(this).text());
+            $("#show-list").html("");
+        });
+    });
+</script>
 
 {% endblock %}

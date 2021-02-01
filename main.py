@@ -3,14 +3,17 @@
 # Main Flask Controller for Padopia
 ######################################################################################
 
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, url_for, flash, redirect, jsonify
 from werkzeug.exceptions import abort
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask_paginate import Pagination, get_page_parameter
 import re
+import json
+from bson.json_util import dumps
 
 DB_CONNECTION = "mongodb+srv://padopiadbuser:WZHZbvqLq5kf4gDyHkzG@padopiacluster.p0hcr.mongodb.net/<dbname>?retryWrites=true&w=majority"
+
 
 def get_db_connection():
     connection = MongoClient(DB_CONNECTION)
@@ -19,11 +22,13 @@ def get_db_connection():
 
 
 app = Flask(__name__)
+
+
 @app.route("/")
 def index():
     return render_template('index.html')
 
-    
+
 @app.route("/search", methods=['GET'])
 def search():
     db = get_db_connection()
@@ -31,7 +36,7 @@ def search():
     collection_agencies = db['agencies']
 
     countries = ['Ireland', 'Spain', 'Bulgaria']
-    #out = "<h1 style='color:blue'>Padopia</h1><ul>"
+    # out = "<h1 style='color:blue'>Padopia</h1><ul>"
     query = {}
     q = request.args.get('q', '').strip()
     country = request.args.get('country', '').strip()
@@ -51,15 +56,16 @@ def search():
     if page < 1:
         page = 1
 
-    offset = (page-1) * per_page
+    offset = (page - 1) * per_page
     count = searched_properties.count()
     properties = searched_properties.skip(offset).limit(per_page)
 
-    search = False # if query == '' else True
-    pagination = Pagination(bs_version=4, page=page, total=count, search=search, record_name='properties', per_page=per_page)
+    search = False  # if query == '' else True
+    pagination = Pagination(bs_version=4, page=page, total=count, search=search, record_name='properties',
+                            per_page=per_page)
 
-    #out += repr(properties)
-    #out += '[[[' + repr(count)
+    # out += repr(properties)
+    # out += '[[[' + repr(count)
 
     new_properties = []
 
@@ -71,8 +77,10 @@ def search():
     #    out += repr(p)
     #    out += '<li><a href="/property/' + str(p['_id']) + '">' + p['property_address'] + '</a></li>'
 
-    #return out
-    return render_template('search.html', properties=new_properties, pagination=pagination, query=query_string, search=search, count=count, start=offset+1, end=offset+shown_count, per_page=per_page)
+    # return out
+    return render_template('search.html', properties=new_properties, pagination=pagination, query=query_string,
+                           search=search, count=count, start=offset + 1, end=offset + shown_count, per_page=per_page)
+
 
 @app.route("/property/<id>")
 def property(id):
@@ -82,13 +90,67 @@ def property(id):
 
     p = collection_property.find_one({'_id': ObjectId(id)})
 
-    #out = "<h1 style='color:blue'>Padopia</h1>"
-    #out += '<h2 style="color:grey">' + p['property_address'] + '</h2>'
-    #out += '<p>' + p['property_description'] + '</p>'
+    # out = "<h1 style='color:blue'>Padopia</h1>"
+    # out += '<h2 style="color:grey">' + p['property_address'] + '</h2>'
+    # out += '<p>' + p['property_description'] + '</p>'
     # return out
 
     return render_template('property.html', p=p)
 
+
+@app.route("/autocomplete", methods=["GET", "POST"])
+def autocomplete():
+    db = get_db_connection()
+    collection_property = db['property']
+
+    """Query db for autocomplete"""
+    autocomplete_query = request.form.get('text')
+
+    autocomplete_locations = []
+    if autocomplete_query is not None:
+        autocomplete_result_cursor = collection_property.aggregate([
+            {
+                '$search': {
+                    'index': 'default_one',
+                    'text': {
+                        'query': autocomplete_query,
+                        'path': [
+                            'property_address_detailed.country',
+                        ],
+                        "fuzzy": {
+                            "maxEdits": 2,
+                        },
+                    }
+                }
+            },
+
+            # Return only 'property_address_detailed.country' field value and groups duplications
+            {
+                '$group':
+                    {
+                        '_id': '$property_address_detailed.country',
+                    }
+            },
+
+            # Return only 5 values
+            {
+                '$limit': 5
+            }
+        ])
+
+        """Dumping autocomplete matches"""
+        autocomplete_results = json.loads(dumps(autocomplete_result_cursor))
+
+        """Extracting addresses from dump"""
+        for item in autocomplete_results:
+            element = item['_id']
+            unit = {'address': element}
+            autocomplete_locations.append(unit)
+
+    result = jsonify(autocomplete_locations)
+
+    return result
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
