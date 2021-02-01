@@ -30,7 +30,7 @@ def search():
     collection_property = db['property']
     collection_agencies = db['agencies']
 
-    countries = ['Ireland', 'Spain', 'Bulgaria']
+    countries = ['Ireland', 'Spain', 'Bulgaria', 'Malta']
     #out = "<h1 style='color:blue'>Padopia</h1><ul>"
     query = {}
     q = request.args.get('q', '').strip()
