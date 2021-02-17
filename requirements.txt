@@ -1,0 +1,17 @@
+# Flask
+Flask==1.1.2
+flask-paginate==0.7.1
+
+# Mongo database
+pymongo==3.11.2
+dnspython==2.0.0
+
+# Google translate API
+google-cloud-translate==3.0.1
+
+# Currency converter
+CurrencyConverter==0.14.4
+
+# Additional packeges
+bson==0.5.10
+Werkzeug==1.0.1
