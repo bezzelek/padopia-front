@@ -7,11 +7,13 @@ import re
 import os
 import json
 
+from datetime import datetime
 from pymongo import MongoClient
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from werkzeug.exceptions import abort
 
+from currency_converter import CurrencyConverter
 from google.cloud import translate_v2 as translate
 from flask_paginate import Pagination
 from flask import Flask, render_template, request
@@ -56,6 +58,80 @@ def translate_text(text, property_id):
     )
 
     return translate_result
+
+
+def convert_currency(property_id, source_amount, source_currency_symbol, currency_iso, currency_symbol):
+    """Converting currency symbol to ISO format"""
+    source_currency_iso = currency_symbol_to_iso(source_currency_symbol)
+
+    if source_currency_iso is not None:
+        """Converting price"""
+        converter = CurrencyConverter()
+        convert = converter.convert(int(source_amount), source_currency_iso, currency_iso)
+        amount = round(convert)
+
+        """Saving property price"""
+        save_property_price(
+            property_id, amount, currency_iso, currency_symbol,
+            source_amount, source_currency_iso, source_currency_symbol
+        )
+
+        result = {
+            'eur': {
+                'amount': int(amount),
+                'currency_iso': str(currency_iso),
+                'currency_symbol': str(currency_symbol),
+            },
+            'source': {
+                'amount': int(source_amount),
+                'currency_iso': str(source_currency_iso),
+                'currency_symbol': str(source_currency_symbol),
+            },
+            'price_last_update': datetime.utcnow(),
+        }
+
+        return result
+    else:
+        return None
+
+
+def currency_symbol_to_iso(value):
+    currency_to_iso = (
+        'EUR' if value == '€'
+        else 'USD' if value == '$'
+        else 'BGN' if value == 'лв'
+        else 'TRY' if value == '₺'
+        else None
+    )
+    return currency_to_iso
+
+
+def save_property_price(
+        property_id, amount, currency_iso, currency_symbol, source_amount, source_currency_iso, source_currency_symbol
+):
+    """Updating property document"""
+    db = get_db_connection()
+    collection_property = db['property']
+
+    date_time = datetime.utcnow()
+
+    collection_property.update_one(
+        {
+            '_id': ObjectId(property_id)
+        },
+        {
+            '$set':
+                {
+                    'property_price.eur.amount': int(amount),
+                    'property_price.eur.currency_iso': str(currency_iso),
+                    'property_price.eur.currency_symbol': str(currency_symbol),
+                    'property_price.source.amount': int(source_amount),
+                    'property_price.source.currency_iso': str(source_currency_iso),
+                    'property_price.source.currency_symbol': str(source_currency_symbol),
+                    'property_price.price_last_update': date_time,
+                }
+        }
+    )
 
 
 app = Flask(__name__)
@@ -142,9 +218,31 @@ def property_item(property_id):
     else:
         property_object['property_description'] = None
 
-    return render_template('property.html', p=property_object)
+    """Converting currency"""
+    currency_symbol = property_object['property_cost_currency']
+    property_cost_amount = property_object['property_cost_integer']
+
+    try:
+        currency_check = property_object['property_price']['source']['currency_iso']
+    except:
+        currency_check = None
+
+    if currency_check != 'EUR':
+        property_price = convert_currency(property_id, property_cost_amount, currency_symbol, 'EUR', '€')
+        property_object['property_price'] = property_price
+    elif currency_check is None:
+        property_price = convert_currency(property_id, property_cost_amount, currency_symbol, 'EUR', '€')
+        property_object['property_price'] = property_price
+
+    """Query agency if exist"""
+    try:
+        query_agency = collection_agencies.find_one({'agency_name': property_object['property_agency']})
+        agency_object = json.loads(dumps(query_agency))
+    except:
+        agency_object = None
+
+    return render_template('property.html', p=property_object, a=agency_object)
 
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
