@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "resonant-forge-294511",
+  "private_key_id": "25f7c1fc6d0f0a5fd6a7226d9a66dfe198fae813",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCZivDZzD4ZzcMl\nd8j0pRl12SbaTLVHxUhCjzMrM63eaZot9bfWHqgosLwI3lBnzpBuUOIvkIFIRTf9\nYNvT1f7rkLHLRO4+VjvkyZksCdok6w6amUABOq3MzJexs9szxPiCbg9j27Hbzu2k\nYMpOGzzV4QRLu/Hn05CMytcDFb89kJrL74z0xPSnOBtCdE32z7VJ0xX6KOM7nXwo\nQ5agzddLfwhKDP59B6PUeTHeH9kzj9Mc/TKi1Tp9hRM/m0SzQU1uT3NT+ks7T3/b\nh7G1BZJsOcJrMPONiAyPBMQyOCpQ3EFG/IFGsEmiUkP9JAjaUw8jC6BXD8bwWPyy\n4pr+b0pZAgMBAAECggEAFurSjSeQ2KgfaaRp4FNo1pqtU7r2+c875wIEXf042oVs\n56bmeV/vsyHB8cRA6xA9UCyOvhELAt71/ux/Pdc8f9Yue2D+pbDtqqCJK2C4aHc/\nIZsgdFkuShmlcKF1j9IP/OPG30g80Uqe/2saTF3WDt78QFOSmoq3khQlKIbimaJp\nqYEwi2ShjngLDXr4ljAzbNTdscjb78rsy9uyf6srh2TOAWgxfvz7BDNl2wjjQ1O9\nKXOQqnl+0uRe4tMf12yhM4Jh7odpiXfJktIFped2KMW601H0MaiSbVM6dBdhTvYA\nv/ZsLByhktAa2O8mUP4uFhXDe83AcBctNlJSRQypWwKBgQDQSZT3W5eebyETBEG8\nKdFHzxum0RISj3wKeclIwYZ54BBxRjebpIxYW80FJMq3eIdGM3p4508ijomQVWJZ\nvCV+ATw4mOFd37D4rKaTPVSRdU6f6bO1Q6NqfbQqQQ8aT6L4ZjDQh+6+SsFHFKrO\nUAvVbaMy9ay+aQajJZMIwlg3BwKBgQC8twOCB25G6SxVtVlU0pZATHgc5ra7OuNd\nPS3w6X1gaiC3avWZyoq1mlx3Fyu/Z7ADrOSLjqLpui6L1GrTbFebjTTdcUF22sMr\nsgGouNHBTCtAR0GB+hYlc/L7Aq+rzx2csiVRbNvxDFnHywkgpQVLWYIWCrK2lS0b\n/T0hozW7nwKBgQC4C1yy2V724vFRsWA4WKcREaM4WuLiPaD4TLacMEyYInHE9aur\nPtG4PZ3CXsk1Jy44zMH6VUFqopJRU/Eso4Bpf8PrqsLwxPjGMyCZWAcC5KnNyZ4+\nm/6o2Vw6PfSPZjD11q5phMNjqAByw4NN/BMIyvD61XSHZ5wyyr/KbJewPwKBgHLq\nbzRrGfgMXXcDq5Y/dkdJSYsv4u44eeN5MdSWGkbv2WRXuZ8g+z6C9POAJJ+1oDVc\nvv9MqF/zhAyaGUMNonuSjTKbmOWraVXeW6xGf1RZ8ax+t6FSjNHZvYikphzVTo7w\n3FCtHXG3t6Q2OySp2IN9yf1qHlGYnZOBrgwhusK5AoGBALU1paF5VpEdmqnwF4TV\naomw0Pwf6dTP5ws14Ipz1yHHuKCTfG/ou0T/dy1OhZkTwkb6R0Bm4moYXZM26Jl8\npBB3Hb+UOtGBFJNO2GqqN5JCqEXE4iH40b1aPFZfqEX+3fM4NIuyA9OssDWhgFkL\noEbChCsbcA6KyBDtRJml9dJ6\n-----END PRIVATE KEY-----\n",
+  "client_email": "translate-key@resonant-forge-294511.iam.gserviceaccount.com",
+  "client_id": "109918925135741797905",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/translate-key%40resonant-forge-294511.iam.gserviceaccount.com"
+}
