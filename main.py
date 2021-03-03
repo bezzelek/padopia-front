@@ -16,7 +16,8 @@ from werkzeug.exceptions import abort
 from currency_converter import CurrencyConverter
 from google.cloud import translate_v2 as translate
 from flask_paginate import Pagination
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+
 
 DB_CONNECTION = "mongodb+srv://padopiadbuser:WZHZbvqLq5kf4gDyHkzG@padopiacluster.p0hcr.mongodb.net/<dbname>?retryWrites=true&w=majority"
 
@@ -146,53 +147,46 @@ def index():
 def search():
     db = get_db_connection()
     collection_property = db['property']
-    collection_agencies = db['agencies']
 
-    countries = ['Ireland', 'Spain', 'Bulgaria', 'Malta']
-    # out = "<h1 style='color:blue'>Padopia</h1><ul>"
-    query = {}
-    q = request.args.get('q', '').strip()
-    country = request.args.get('country', '').strip()
-    query_string = ''
-    if q != '':
-        query_re = re.compile(q, re.IGNORECASE)
-        query['property_address'] = query_re
-        query_string += ' matching "' + q + '"'
-    if country in countries:
-        query['property_website_country'] = country
-        query_string += ' in ' + country
+    """Requested information"""
+    q = request.args.get('country')
 
-    searched_properties = collection_property.find(query)
+    """Query information"""
+    if q is None:
+        q = ''
 
+    searched_properties = collection_property.find(
+        {
+            'property_address': re.compile(q, re.IGNORECASE),
+         }
+    ).sort('date_time', -1)
+
+    """Current search page"""
+    current_page = request.args.get('page', type=int, default=1)
+    if current_page < 1:
+        current_page = 1
+
+    """Properties for current search page"""
     per_page = 25
-    page = request.args.get('page', type=int, default=1)
-    if page < 1:
-        page = 1
+    offset = (current_page - 1) * per_page
+    current_page_properties = searched_properties.sort('date_time', -1).skip(offset).limit(per_page)
 
-    offset = (page - 1) * per_page
-    count = searched_properties.count()
-    properties = searched_properties.skip(offset).limit(per_page)
+    """Pagination"""
+    search_check = False  # if query == '' else True
+    queried_properties_count = searched_properties.count()
+    pagination = Pagination(
+        bs_version=4, page=current_page, total=queried_properties_count,
+        search=search_check, record_name='properties', per_page=per_page
+    )
 
-    search = False  # if query == '' else True
-    pagination = Pagination(bs_version=4, page=page, total=count, search=search, record_name='properties',
-                            per_page=per_page)
+    """Dumping properties"""
+    properties_result = json.loads(dumps(current_page_properties))
+    properties_count = len(properties_result)
 
-    # out += repr(properties)
-    # out += '[[[' + repr(count)
-
-    new_properties = []
-
-    shown_count = 0
-    for p in properties:
-        p['id'] = str(p['_id'])
-        new_properties.append(p)
-        shown_count += 1
-    #    out += repr(p)
-    #    out += '<li><a href="/property/' + str(p['_id']) + '">' + p['property_address'] + '</a></li>'
-
-    # return out
-    return render_template('search.html', properties=new_properties, pagination=pagination, query=query_string,
-                           search=search, count=count, start=offset + 1, end=offset + shown_count, per_page=per_page)
+    return render_template(
+        'search.html', properties=properties_result, pagination=pagination, query=q, search=search_check,
+        count=queried_properties_count, start=offset + 1, end=offset + properties_count, per_page=per_page
+    )
 
 
 @app.route("/property/<property_id>")
@@ -242,6 +236,81 @@ def property_item(property_id):
         agency_object = None
 
     return render_template('property.html', p=property_object, a=agency_object)
+
+
+@app.route("/agency/<agency_id>")
+def agency_item(agency_id):
+    db = get_db_connection()
+    collection_property = db['test_property']
+    collection_agencies = db['test_agencies']
+
+    query_agency = collection_agencies.find_one({'_id': ObjectId(agency_id)})
+    agency_object = json.loads(dumps(query_agency))
+    query_property = collection_property.find({'property_agency': agency_object['agency_name']}).sort('date_time', -1)
+    property_object = json.loads(dumps(query_property))
+
+    result = json.dumps(
+        {
+            'property_info': property_object,
+            'agency_info': agency_object
+        }
+    )
+
+    return result
+
+
+@app.route("/autocomplete", methods=["GET", "POST"])
+def autocomplete():
+    db = get_db_connection()
+    collection_property = db['property']
+
+    """Query db for autocomplete"""
+    autocomplete_query = request.form.get('text')
+
+    autocomplete_locations = []
+    if autocomplete_query is not None:
+        autocomplete_result_cursor = collection_property.aggregate([
+            {
+                '$search': {
+                    'index': 'default_one',
+                    'text': {
+                        'query': autocomplete_query,
+                        'path': [
+                            'property_address_detailed.country',
+                        ],
+                        "fuzzy": {
+                            "maxEdits": 2,
+                        },
+                    }
+                }
+            },
+
+            # Return only 'property_address_detailed.country' field value and groups duplications
+            {
+                '$group':
+                    {
+                        '_id': '$property_address_detailed.country',
+                    }
+            },
+
+            # Return only 5 values
+            {
+                '$limit': 5
+            }
+        ])
+
+        """Dumping autocomplete matches"""
+        autocomplete_results = json.loads(dumps(autocomplete_result_cursor))
+
+        """Extracting addresses from dump"""
+        for item in autocomplete_results:
+            element = item['_id']
+            unit = {'address': element}
+            autocomplete_locations.append(unit)
+
+    result = jsonify(autocomplete_locations)
+
+    return result
 
 
 if __name__ == "__main__":
